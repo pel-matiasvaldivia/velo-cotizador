@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --velo-dark: #07172F;
+  --velo-primary: #0F3460;
+  --velo-accent: #E94560;
+  --velo-steel: #C0C0C0;
+  --velo-light: #F8F9FA;
+}
+
+@layer base {
+  body {
+    @apply bg-velo-light text-velo-dark font-sans;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .rounded-velo {
+    border-radius: 4px;
+  }
+}
