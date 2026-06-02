@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, MessageCircle, Mail, MapPin, Calendar, Clock } from 'lucide-react';
+import { Download, MessageCircle, MapPin, Calendar, Clock } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface CotizacionResultProps {
