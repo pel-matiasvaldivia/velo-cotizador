@@ -20,7 +20,7 @@ import redisConfig from './config/redis.config';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => config.get('database'),
+      useFactory: (config: ConfigService) => config.get('database')!,
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],

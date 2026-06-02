@@ -23,7 +23,7 @@ export class AiService {
       ];
 
       const response = await this.anthropic.messages.create({
-        model: this.configService.get<string>('ai.model'),
+        model: this.configService.get<string>('ai.model') as any,
         max_tokens: 4096,
         system: `${VELO_SYSTEM_PROMPT}\n\n${VELO_CATALOG_CONTEXT}`,
         messages: messages,
