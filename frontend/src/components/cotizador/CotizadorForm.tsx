@@ -41,10 +41,44 @@ const CotizadorForm: React.FC = () => {
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      const {
+        ubicacion,
+        timeline,
+        descripcionProyecto,
+        capacidad,
+        litrosCoccion,
+        sector,
+        tipoEquipo,
+        automatizacion,
+        material,
+        ...contacto
+      } = data;
+
+      // Consolidate the technical specs (otherwise discarded) into the
+      // description so the AI actually receives them.
+      const specLines = [
+        capacidad && `Capacidad requerida: ${capacidad} L`,
+        litrosCoccion && `Litros por cocción: ${litrosCoccion} L`,
+        sector && `Sector industrial: ${sector}`,
+        tipoEquipo && `Tipo de equipo: ${tipoEquipo}`,
+        automatizacion && `Nivel de automatización: ${automatizacion}`,
+        material && `Material: ${material}`,
+        timeline && `Plazo estimado: ${timeline}`,
+      ].filter(Boolean);
+
+      const payload = {
+        ...contacto,
+        division,
+        provincia: ubicacion,
+        descripcionProyecto: [descripcionProyecto, ...specLines]
+          .filter(Boolean)
+          .join('\n'),
+      };
+
       const response = await fetch('/api/cotizaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, division }),
+        body: JSON.stringify(payload),
       });
       
       const resultData = await response.json();

@@ -25,11 +25,7 @@ import redisConfig from './config/redis.config';
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        redis: {
-          host: config.get<string>('redis.host'),
-          port: config.get<number>('redis.port'),
-          password: config.get<string>('redis.password'),
-        },
+        redis: config.get<string>('redis.url'),
       }),
     }),
     AiModule,
