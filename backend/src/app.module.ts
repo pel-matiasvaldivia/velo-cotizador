@@ -8,6 +8,9 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { EmailModule } from './modules/email/email.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
 import databaseConfig from './config/database.config';
 import aiConfig from './config/ai.config';
 import redisConfig from './config/redis.config';
@@ -28,6 +31,9 @@ import redisConfig from './config/redis.config';
         redis: config.get<string>('redis.url'),
       }),
     }),
+    AuthModule,
+    UsersModule,
+    CatalogModule,
     AiModule,
     CotizacionModule,
     WhatsappModule,

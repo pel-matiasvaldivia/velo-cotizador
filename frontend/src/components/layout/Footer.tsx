@@ -34,7 +34,9 @@ const Footer: React.FC = () => {
       
       <div className="max-w-7xl mx-auto border-t border-white border-opacity-10 mt-12 pt-8 flex flex-col md:row justify-between text-xs text-gray-500 uppercase tracking-widest">
         <p>© {new Date().getFullYear()} Velo Argentina S.A. Todos los derechos reservados.</p>
-        <p>Diseño e Innovación Industrial</p>
+        <a href="/admin" className="hover:text-velo-accent transition-colors">
+          Acceso equipo comercial
+        </a>
       </div>
     </footer>
   );

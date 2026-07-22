@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Cotizacion, CotizacionItem } from './cotizacion.entity';
@@ -7,6 +7,8 @@ import { AiService } from '../ai/ai.service';
 import { PdfService } from '../pdf/pdf.service';
 import { EmailService } from '../email/email.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
+import { QueryCotizacionDto } from './dto/query-cotizacion.dto';
+import { UpdateCotizacionDto } from './dto/update-cotizacion.dto';
 
 @Injectable()
 export class CotizacionService {
@@ -106,6 +108,71 @@ export class CotizacionService {
       where: { id },
       relations: { lead: true, items: true },
     });
+  }
+
+  // ---- Admin / portal comercial ----
+
+  async findAll(query: QueryCotizacionDto) {
+    const page = Math.max(parseInt(query.page || '1', 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(query.limit || '20', 10) || 20, 1), 100);
+
+    const qb = this.cotizacionRepository
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.lead', 'lead')
+      .orderBy('c.created_at', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (query.division) qb.andWhere('c.division = :division', { division: query.division });
+    if (query.estado) qb.andWhere('c.estado = :estado', { estado: query.estado });
+    if (query.prioridad)
+      qb.andWhere('c.prioridadComercial = :prioridad', { prioridad: query.prioridad });
+    if (query.search) {
+      qb.andWhere(
+        '(c.numeroCotizacion ILIKE :s OR lead.nombre ILIKE :s OR lead.empresa ILIKE :s OR lead.email ILIKE :s)',
+        { s: `%${query.search}%` },
+      );
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async update(id: string, dto: UpdateCotizacionDto) {
+    const cotizacion = await this.cotizacionRepository.findOne({ where: { id } });
+    if (!cotizacion) throw new NotFoundException('Cotización no encontrada');
+    Object.assign(cotizacion, dto);
+    await this.cotizacionRepository.save(cotizacion);
+    return this.findOne(id);
+  }
+
+  async getStats() {
+    const porEstado = await this.cotizacionRepository
+      .createQueryBuilder('c')
+      .select('c.estado', 'estado')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy('c.estado')
+      .getRawMany();
+
+    const porDivision = await this.cotizacionRepository
+      .createQueryBuilder('c')
+      .select('c.division', 'division')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy('c.division')
+      .getRawMany();
+
+    const total = await this.cotizacionRepository.count();
+    const totalLeads = await this.leadRepository.count();
+
+    return {
+      total,
+      totalLeads,
+      porEstado: porEstado.map((r) => ({ estado: r.estado, total: Number(r.total) })),
+      porDivision: porDivision.map((r) => ({
+        division: r.division,
+        total: Number(r.total),
+      })),
+    };
   }
 
   private async generateAndSend(cotizacion: Cotizacion) {
